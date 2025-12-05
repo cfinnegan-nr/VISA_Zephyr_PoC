@@ -9,12 +9,13 @@ SECURITY WARNING: Never commit .env files or hardcode credentials!
 """
 
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import Field, ValidationError
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.exceptions import JiraConfigurationError
 
@@ -62,17 +63,12 @@ class Settings(BaseSettings):
         description="JIRA API token for authentication",
     )
 
-    class Config:
-        """
-        Pydantic configuration for Settings.
-
-        Configures environment variable loading from .env file.
-        """
-
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        # Allow case-insensitive environment variable names
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",  # Ignore extra fields that aren't defined in Settings
+        # Don't set env_file here - we'll handle it in load_settings()
+    )
 
 
 def load_settings() -> Settings:
@@ -105,27 +101,55 @@ def load_settings() -> Settings:
     # Fallback: .env file in project root
     env_path = Path(__file__).parent.parent / ".env"
 
+    # Determine which credential file to use
+    env_file_to_use: Optional[Path] = None
+    
+    if credential_file_path.exists():
+        env_file_to_use = credential_file_path
+        logger.info(
+            f"Found credential file: {credential_file_path}"
+        )
+    elif env_path.exists():
+        env_file_to_use = env_path
+        logger.info(f"Found .env file: {env_path}")
+    else:
+        logger.warning(
+            f"Credential file not found at {credential_file_path} "
+            f"or .env file at {env_path}. "
+            "Please ensure credentials are available."
+        )
+
     try:
-        # Try to load from primary credential file first
-        if credential_file_path.exists():
-            load_dotenv(dotenv_path=credential_file_path)
-            logger.info(
-                f"Loaded environment variables from credential file: {credential_file_path}"
-            )
-        elif env_path.exists():
-            # Fallback to .env file in project root
-            load_dotenv(dotenv_path=env_path)
-            logger.info(f"Loaded environment variables from {env_path}")
+        # Load environment variables from the credential file if it exists
+        if env_file_to_use:
+            # Load into environment using dotenv
+            result = load_dotenv(dotenv_path=env_file_to_use, override=True)
+            if result:
+                logger.info(
+                    f"Loaded environment variables from: {env_file_to_use}"
+                )
+                # Verify that at least one variable was loaded
+                if not (
+                    os.getenv("JIRA_SERVER_URL")
+                    or os.getenv("JIRA_USERNAME")
+                    or os.getenv("JIRA_API_TOKEN")
+                ):
+                    logger.warning(
+                        f"File {env_file_to_use} exists but no JIRA environment "
+                        "variables were found. Please check the file format. "
+                        "Expected format: KEY=VALUE (one per line)"
+                    )
+            else:
+                logger.warning(
+                    f"Failed to load environment variables from {env_file_to_use}. "
+                    "File may be empty or have incorrect format."
+                )
         else:
-            logger.warning(
-                f"Credential file not found at {credential_file_path} "
-                f"or .env file at {env_path}. "
-                "Please ensure credentials are available."
-            )
-            # Still try to load from environment (might be set in system)
+            # Try to load from system environment
             load_dotenv()
 
         # Validate and create settings object
+        # Settings will read from os.environ which was populated by load_dotenv()
         # Pydantic will raise ValidationError if required fields are missing
         settings = Settings()
 
@@ -149,20 +173,59 @@ def load_settings() -> Settings:
     except ValidationError as e:
         # Pydantic validation error - missing or invalid fields
         error_messages = []
+        missing_fields = []
         for error in e.errors():
             field = error.get("loc", ["unknown"])[0]
-            error_messages.append(f"  - {field}: {error.get('msg', 'invalid')}")
+            msg = error.get("msg", "invalid")
+            error_messages.append(f"  - {field}: {msg}")
+            if "required" in msg.lower() or "field required" in msg.lower():
+                missing_fields.append(field.upper())
 
-        raise JiraConfigurationError(
+        # Check which variables are actually missing from environment
+        missing_vars = []
+        if not os.getenv("JIRA_SERVER_URL"):
+            missing_vars.append("JIRA_SERVER_URL")
+        if not os.getenv("JIRA_USERNAME"):
+            missing_vars.append("JIRA_USERNAME")
+        if not os.getenv("JIRA_API_TOKEN"):
+            missing_vars.append("JIRA_API_TOKEN")
+
+        error_msg = (
             "Failed to load JIRA configuration. "
             "Please ensure the following environment variables are set:\n"
             "  - JIRA_SERVER_URL (e.g., https://your-instance.atlassian.net)\n"
             "  - JIRA_USERNAME (your JIRA username or email)\n"
             "  - JIRA_API_TOKEN (your JIRA API token)\n\n"
-            "Create a .env file in the project root with these variables.\n"
+        )
+
+        # Provide specific guidance based on what was found
+        if env_file_to_use and missing_vars:
+            if env_file_to_use == credential_file_path:
+                error_msg += (
+                    f"The credential file at {credential_file_path} was found, "
+                    "but it does not contain the required JIRA variables.\n"
+                    "Please add the following variables to that file:\n"
+                )
+                for var in missing_vars:
+                    error_msg += f"  {var}=your-value-here\n"
+                error_msg += "\n"
+            else:
+                error_msg += (
+                    f"The .env file at {env_path} was found, "
+                    "but it does not contain the required JIRA variables.\n"
+                    "Please add the following variables to that file:\n"
+                )
+                for var in missing_vars:
+                    error_msg += f"  {var}=your-value-here\n"
+                error_msg += "\n"
+
+        error_msg += (
+            "Alternatively, create a .env file in the project root with these variables.\n"
             "See .env.example for a template.\n\n"
             f"Validation errors:\n" + "\n".join(error_messages)
-        ) from e
+        )
+
+        raise JiraConfigurationError(error_msg) from e
 
     except Exception as e:
         # Catch any other unexpected errors
