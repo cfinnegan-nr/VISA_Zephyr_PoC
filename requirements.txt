@@ -1,0 +1,4 @@
+# Python project dependencies
+# Install packages using: pip install -r requirements.txt
+# Add new packages using: pip install <package-name> && pip freeze > requirements.txt
+
