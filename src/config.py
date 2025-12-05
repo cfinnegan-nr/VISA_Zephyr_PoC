@@ -75,8 +75,7 @@ def load_settings() -> Settings:
     """
     Load and validate application settings from environment variables.
 
-    This function loads environment variables from a .openai credential file
-    at the specified path, or falls back to a .env file in the project root.
+    This function loads environment variables from a .env file in the project root.
     It validates them using Pydantic and provides clear error messages if
     credentials are missing or invalid.
 
@@ -92,42 +91,16 @@ def load_settings() -> Settings:
         >>> print(settings.jira_server_url)
         https://your-instance.atlassian.net
     """
-    # Primary credential file path (absolute path to .openai file)
+    # .env file in project root
     # SECURITY: This file contains sensitive credentials and is NOT committed to Git
-    credential_file_path = Path(
-        r"C:\Sensa_NR\2026\QA\GenAI\AINative_Env\.openai"
-    )
-
-    # Fallback: .env file in project root
     env_path = Path(__file__).parent.parent / ".env"
 
-    # Determine which credential file to use
-    env_file_to_use: Optional[Path] = None
-    
-    if credential_file_path.exists():
-        env_file_to_use = credential_file_path
-        logger.info(
-            f"Found credential file: {credential_file_path}"
-        )
-    elif env_path.exists():
-        env_file_to_use = env_path
-        logger.info(f"Found .env file: {env_path}")
-    else:
-        logger.warning(
-            f"Credential file not found at {credential_file_path} "
-            f"or .env file at {env_path}. "
-            "Please ensure credentials are available."
-        )
-
     try:
-        # Load environment variables from the credential file if it exists
-        if env_file_to_use:
-            # Load into environment using dotenv
-            result = load_dotenv(dotenv_path=env_file_to_use, override=True)
+        # Load environment variables from .env file if it exists
+        if env_path.exists():
+            result = load_dotenv(dotenv_path=env_path, override=True)
             if result:
-                logger.info(
-                    f"Loaded environment variables from: {env_file_to_use}"
-                )
+                logger.info(f"Loaded environment variables from: {env_path}")
                 # Verify that at least one variable was loaded
                 if not (
                     os.getenv("JIRA_SERVER_URL")
@@ -135,16 +108,20 @@ def load_settings() -> Settings:
                     or os.getenv("JIRA_API_TOKEN")
                 ):
                     logger.warning(
-                        f"File {env_file_to_use} exists but no JIRA environment "
+                        f"File {env_path} exists but no JIRA environment "
                         "variables were found. Please check the file format. "
                         "Expected format: KEY=VALUE (one per line)"
                     )
             else:
                 logger.warning(
-                    f"Failed to load environment variables from {env_file_to_use}. "
+                    f"Failed to load environment variables from {env_path}. "
                     "File may be empty or have incorrect format."
                 )
         else:
+            logger.warning(
+                f".env file not found at {env_path}. "
+                "Attempting to load from system environment variables."
+            )
             # Try to load from system environment
             load_dotenv()
 
@@ -199,25 +176,15 @@ def load_settings() -> Settings:
         )
 
         # Provide specific guidance based on what was found
-        if env_file_to_use and missing_vars:
-            if env_file_to_use == credential_file_path:
-                error_msg += (
-                    f"The credential file at {credential_file_path} was found, "
-                    "but it does not contain the required JIRA variables.\n"
-                    "Please add the following variables to that file:\n"
-                )
-                for var in missing_vars:
-                    error_msg += f"  {var}=your-value-here\n"
-                error_msg += "\n"
-            else:
-                error_msg += (
-                    f"The .env file at {env_path} was found, "
-                    "but it does not contain the required JIRA variables.\n"
-                    "Please add the following variables to that file:\n"
-                )
-                for var in missing_vars:
-                    error_msg += f"  {var}=your-value-here\n"
-                error_msg += "\n"
+        if env_path.exists() and missing_vars:
+            error_msg += (
+                f"The .env file at {env_path} was found, "
+                "but it does not contain the required JIRA variables.\n"
+                "Please add the following variables to that file:\n"
+            )
+            for var in missing_vars:
+                error_msg += f"  {var}=your-value-here\n"
+            error_msg += "\n"
 
         error_msg += (
             "Alternatively, create a .env file in the project root with these variables.\n"
@@ -233,4 +200,3 @@ def load_settings() -> Settings:
         raise JiraConfigurationError(
             f"Failed to load configuration: {e}"
         ) from e
-

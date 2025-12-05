@@ -6,4 +6,10 @@
 requests>=2.31.0  # For JIRA REST API calls
 python-dotenv>=1.0.0  # For environment variable management
 pydantic>=2.0.0  # For configuration validation
+pydantic-settings>=2.0.0  # For BaseSettings (required for Pydantic v2+)
+
+# Testing Dependencies
+pytest>=7.4.0  # Testing framework
+pytest-cov>=4.1.0  # Coverage reporting
+pytest-mock>=3.11.0  # Mocking utilities
 
