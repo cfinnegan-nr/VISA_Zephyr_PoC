@@ -22,8 +22,8 @@ def parse_atlassian_input(input_file_path: Optional[Path] = None) -> Dict[str, s
     This function reads the AtlassianInput.txt file from the project root
     and extracts the JIRA QA Ticket and EPIC Ticket keys. The file format
     is expected to be:
-        JIRA QA Ticket:INVHUB-21868
-        EPIC Ticket:INVHUB-19969
+        JIRA QA Ticket:PROJECT-XXXXX
+        EPIC Ticket:PROJECT-XXXXX
 
     Args:
         input_file_path: Optional path to the input file. If not provided,
@@ -40,9 +40,9 @@ def parse_atlassian_input(input_file_path: Optional[Path] = None) -> Dict[str, s
     Example:
         >>> tickets = parse_atlassian_input()
         >>> print(tickets['qa_ticket'])
-        INVHUB-21868
+        PROJECT-12345
         >>> print(tickets['epic_ticket'])
-        INVHUB-19969
+        PROJECT-67890
     """
     # Default to project root if path not provided
     if input_file_path is None:
@@ -57,7 +57,8 @@ def parse_atlassian_input(input_file_path: Optional[Path] = None) -> Dict[str, s
         if not input_file_path.exists():
             raise InputFileError(
                 f"Input file not found: {input_file_path}\n"
-                "Please ensure AtlassianInput.txt exists in the project root."
+                "Please create AtlassianInput.txt in the project root.\n"
+                "You can copy AtlassianInput.example.txt as a template."
             )
 
         # Read file contents

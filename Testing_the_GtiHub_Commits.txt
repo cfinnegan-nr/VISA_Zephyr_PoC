@@ -1,2 +1,0 @@
-One: Check the upload to 'develop' branch.
-Two: Check the download from 'develop' to local project.

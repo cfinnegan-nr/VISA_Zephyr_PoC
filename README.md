@@ -89,11 +89,13 @@ The application requires JIRA credentials stored in a local `.env` file:
 
 ### Input File Format
 
-The `AtlassianInput.txt` file should contain:
+Create an `AtlassianInput.txt` file in the project root (copy from `AtlassianInput.example.txt`):
 ```
-JIRA QA Ticket:INVHUB-21868
-EPIC Ticket:INVHUB-19969
+JIRA QA Ticket:PROJECT-XXXXX
+EPIC Ticket:PROJECT-XXXXX
 ```
+
+Replace `PROJECT-XXXXX` with your actual JIRA ticket keys. The `AtlassianInput.txt` file is not committed to version control to protect project-specific information.
 
 ## Project Structure
 
@@ -106,7 +108,8 @@ VISA_Zephyr_PoC/
 │   ├── utils.py            # Utility functions
 │   └── exceptions.py       # Custom exceptions
 ├── hello_world.py          # Basic Hello World application
-├── AtlassianInput.txt      # Input file with JIRA ticket keys
+├── AtlassianInput.example.txt  # Example input file template
+├── AtlassianInput.txt      # Input file with JIRA ticket keys (create from example, NOT committed)
 ├── requirements.txt        # Python dependencies
 ├── .env.example            # Environment variable template
 ├── .env                    # Local credentials (NOT committed)
