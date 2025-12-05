@@ -55,6 +55,9 @@ coverage.xml
 .env
 .env.local
 
+# Credential files (do not commit)
+.openai
+
 # OS
 .DS_Store
 Thumbs.db

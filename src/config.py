@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseSettings, Field, ValidationError
+from pydantic import Field, ValidationError
+from pydantic_settings import BaseSettings
 
 from src.exceptions import JiraConfigurationError
 
@@ -78,15 +79,16 @@ def load_settings() -> Settings:
     """
     Load and validate application settings from environment variables.
 
-    This function loads environment variables from a .env file in the
-    project root directory and validates them using Pydantic. It provides
-    clear error messages if credentials are missing or invalid.
+    This function loads environment variables from a .openai credential file
+    at the specified path, or falls back to a .env file in the project root.
+    It validates them using Pydantic and provides clear error messages if
+    credentials are missing or invalid.
 
     Returns:
         Settings: Validated settings object containing JIRA credentials.
 
     Raises:
-        JiraConfigurationError: If .env file is missing, or if required
+        JiraConfigurationError: If credential file is missing, or if required
             environment variables are not set or invalid.
 
     Example:
@@ -94,19 +96,31 @@ def load_settings() -> Settings:
         >>> print(settings.jira_server_url)
         https://your-instance.atlassian.net
     """
-    # Load environment variables from .env file
-    # The .env file should be in the project root and is NOT committed to Git
+    # Primary credential file path (absolute path to .openai file)
+    # SECURITY: This file contains sensitive credentials and is NOT committed to Git
+    credential_file_path = Path(
+        r"C:\Sensa_NR\2026\QA\GenAI\AINative_Env\.openai"
+    )
+
+    # Fallback: .env file in project root
     env_path = Path(__file__).parent.parent / ".env"
 
     try:
-        # Load .env file if it exists
-        if env_path.exists():
+        # Try to load from primary credential file first
+        if credential_file_path.exists():
+            load_dotenv(dotenv_path=credential_file_path)
+            logger.info(
+                f"Loaded environment variables from credential file: {credential_file_path}"
+            )
+        elif env_path.exists():
+            # Fallback to .env file in project root
             load_dotenv(dotenv_path=env_path)
             logger.info(f"Loaded environment variables from {env_path}")
         else:
             logger.warning(
-                f".env file not found at {env_path}. "
-                "Please create .env file with JIRA credentials."
+                f"Credential file not found at {credential_file_path} "
+                f"or .env file at {env_path}. "
+                "Please ensure credentials are available."
             )
             # Still try to load from environment (might be set in system)
             load_dotenv()
