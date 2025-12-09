@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from src.exceptions import JiraConfigurationError
+from src.exceptions import JiraConfigurationError, ZephyrConfigurationError
 
 # Configure logging for this module
 logger = logging.getLogger(__name__)
@@ -35,9 +35,13 @@ class Settings(BaseSettings):
         jira_server_url: The base URL of the JIRA instance.
         jira_username: JIRA username or email address.
         jira_api_token: JIRA API token for authentication.
+        zephyr_api_token: Zephyr Scale API token for authentication.
+        zephyr_base_url: The base URL of the Zephyr Scale API instance.
 
     Raises:
-        JiraConfigurationError: If required environment variables
+        JiraConfigurationError: If required JIRA environment variables
+            are missing or invalid.
+        ZephyrConfigurationError: If required Zephyr environment variables
             are missing or invalid.
     """
 
@@ -61,6 +65,21 @@ class Settings(BaseSettings):
         ...,
         env="JIRA_API_TOKEN",
         description="JIRA API token for authentication",
+    )
+
+    # Zephyr Scale API token - must be provided
+    # SECURITY: This is sensitive data - never log or expose this value!
+    zephyr_api_token: str = Field(
+        ...,
+        env="ZEPHYR_API_TOKEN",
+        description="Zephyr Scale API token for authentication",
+    )
+
+    # Zephyr Scale base URL - must be provided
+    zephyr_base_url: str = Field(
+        ...,
+        env="ZEPHYR_BASE_URL",
+        description="Base URL of the Zephyr Scale API (e.g., https://api.zephyrscale.smartbear.com/v2)",
     )
 
     model_config = SettingsConfigDict(
@@ -106,9 +125,11 @@ def load_settings() -> Settings:
                     os.getenv("JIRA_SERVER_URL")
                     or os.getenv("JIRA_USERNAME")
                     or os.getenv("JIRA_API_TOKEN")
+                    or os.getenv("ZEPHYR_API_TOKEN")
+                    or os.getenv("ZEPHYR_BASE_URL")
                 ):
                     logger.warning(
-                        f"File {env_path} exists but no JIRA environment "
+                        f"File {env_path} exists but no environment "
                         "variables were found. Please check the file format. "
                         "Expected format: KEY=VALUE (one per line)"
                     )
@@ -130,20 +151,31 @@ def load_settings() -> Settings:
         # Pydantic will raise ValidationError if required fields are missing
         settings = Settings()
 
-        # Validate that server URL is properly formatted
+        # Validate that JIRA server URL is properly formatted
         if not settings.jira_server_url.startswith(("http://", "https://")):
             raise JiraConfigurationError(
                 f"JIRA_SERVER_URL must start with http:// or https://. "
                 f"Got: {settings.jira_server_url}"
             )
 
-        # Log successful configuration (but never log the token!)
+        # Validate that Zephyr base URL is properly formatted
+        if not settings.zephyr_base_url.startswith(("http://", "https://")):
+            raise ZephyrConfigurationError(
+                f"ZEPHYR_BASE_URL must start with http:// or https://. "
+                f"Got: {settings.zephyr_base_url}"
+            )
+
+        # Log successful configuration (but never log the tokens!)
         logger.info(
             f"Successfully loaded JIRA configuration for server: "
             f"{settings.jira_server_url}"
         )
-        logger.info(f"Username: {settings.jira_username}")
-        logger.debug("API token loaded (not displayed for security)")
+        logger.info(f"JIRA Username: {settings.jira_username}")
+        logger.info(
+            f"Successfully loaded Zephyr configuration for server: "
+            f"{settings.zephyr_base_url}"
+        )
+        logger.debug("API tokens loaded (not displayed for security)")
 
         return settings
 
@@ -166,13 +198,21 @@ def load_settings() -> Settings:
             missing_vars.append("JIRA_USERNAME")
         if not os.getenv("JIRA_API_TOKEN"):
             missing_vars.append("JIRA_API_TOKEN")
+        if not os.getenv("ZEPHYR_API_TOKEN"):
+            missing_vars.append("ZEPHYR_API_TOKEN")
+        if not os.getenv("ZEPHYR_BASE_URL"):
+            missing_vars.append("ZEPHYR_BASE_URL")
 
         error_msg = (
-            "Failed to load JIRA configuration. "
+            "Failed to load configuration. "
             "Please ensure the following environment variables are set:\n"
+            "JIRA Configuration:\n"
             "  - JIRA_SERVER_URL (e.g., https://your-instance.atlassian.net)\n"
             "  - JIRA_USERNAME (your JIRA username or email)\n"
-            "  - JIRA_API_TOKEN (your JIRA API token)\n\n"
+            "  - JIRA_API_TOKEN (your JIRA API token)\n"
+            "Zephyr Configuration:\n"
+            "  - ZEPHYR_API_TOKEN (your Zephyr Scale API token)\n"
+            "  - ZEPHYR_BASE_URL (e.g., https://api.zephyrscale.smartbear.com/v2)\n\n"
         )
 
         # Provide specific guidance based on what was found

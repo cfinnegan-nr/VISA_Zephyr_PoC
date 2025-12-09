@@ -41,3 +41,26 @@ class InputFileError(JiraReaderError):
 
     pass
 
+
+class ZephyrConnectionError(JiraReaderError):
+    """Raised when there are network or connection issues with Zephyr Scale API."""
+
+    pass
+
+
+class ZephyrAuthenticationError(JiraReaderError):
+    """Raised when Zephyr Scale API authentication fails (401, 403 errors)."""
+
+    pass
+
+
+class ZephyrTestCaseNotFoundError(JiraReaderError):
+    """Raised when a Zephyr test case cannot be found (404 error)."""
+
+    pass
+
+
+class ZephyrConfigurationError(JiraReaderError):
+    """Raised when Zephyr Scale API configuration is missing or invalid."""
+
+    pass
