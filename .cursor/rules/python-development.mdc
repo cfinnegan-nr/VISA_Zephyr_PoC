@@ -1,60 +1,9 @@
-# AI Agent Guidelines for Python Development
-
-**Version:** 1.0  
-**Last Updated:** 2026  
-**Project:** VISA Zephyr PoC  
-**Python Version:** 3.11+
-
-This document provides comprehensive guidelines for AI tools and agents working on Python code generation, project configuration, and maintenance in this project. These guidelines ensure consistency, maintainability, and adherence to industry best practices.
-
 ---
-
-## Table of Contents
-
-1. [Project Environment](#project-environment)
-2. [Code Style and Formatting](#code-style-and-formatting)
-3. [Project Structure](#project-structure)
-4. [Dependencies Management](#dependencies-management)
-5. [Type Hints and Annotations](#type-hints-and-annotations)
-6. [Error Handling](#error-handling)
-7. [Documentation Standards](#documentation-standards)
-8. [Testing Guidelines](#testing-guidelines)
-9. [Security Best Practices](#security-best-practices)
-10. [Performance Considerations](#performance-considerations)
-11. [Configuration Management](#configuration-management)
-12. [Git and Version Control](#git-and-version-control)
-13. [Code Review Checklist](#code-review-checklist)
-
+alwaysApply: true
 ---
-
-## Project Environment
-
-### Virtual Environment
-
-- **ALWAYS** use the project's virtual environment located at `venv/`
-- **NEVER** install packages globally - the project is configured to prevent this
-- **VERIFY** the virtual environment is activated before running any Python commands
-- The virtual environment activates automatically in VS Code/Cursor terminals
-
-### Python Interpreter
-
-- **USE** Python 3.11 or higher
-- **SET** interpreter path: `${workspaceFolder}/venv/Scripts/python.exe` (Windows)
-- **ENSURE** all generated code is compatible with Python 3.11+
-
-### Environment Variables
-
-- **STORE** sensitive data (API keys, credentials) in `.env` files (never commit these)
-- **USE** `python-dotenv` for loading environment variables
-- **DOCUMENT** required environment variables in `.env.example`
-- **NEVER** hardcode secrets, credentials, or API keys in source code
-
----
-
 ## Code Style and Formatting
 
 ### PEP 8 Compliance
-
 - **FOLLOW** PEP 8 style guide strictly
 - **USE** 4 spaces for indentation (never tabs)
 - **LIMIT** lines to 88 characters (Black formatter default)
@@ -62,14 +11,12 @@ This document provides comprehensive guidelines for AI tools and agents working 
 - **USE** PascalCase for class names
 
 ### Code Formatting Tools
-
 - **USE** Black for code formatting (line length: 88)
 - **USE** isort for import sorting
 - **USE** flake8 or ruff for linting
 - **CONFIGURE** these tools in `pyproject.toml` or `.flake8`
 
 ### Import Organization
-
 ```python
 # Standard library imports
 import os
@@ -92,7 +39,6 @@ from .utils import helper_function
 - Sort imports alphabetically within groups
 
 ### Naming Conventions
-
 - **Functions/Methods:** `snake_case` (e.g., `get_user_data`)
 - **Classes:** `PascalCase` (e.g., `UserManager`)
 - **Constants:** `UPPER_SNAKE_CASE` (e.g., `MAX_RETRIES`)
@@ -104,7 +50,6 @@ from .utils import helper_function
 ## Project Structure
 
 ### Recommended Directory Layout
-
 ```
 project_root/
 ├── .vscode/              # VS Code settings (committed)
@@ -132,7 +77,6 @@ project_root/
 ```
 
 ### File Organization Rules
-
 - **ONE** class per file (unless classes are closely related)
 - **GROUP** related functions in modules
 - **KEEP** files focused and under 300 lines when possible
@@ -144,7 +88,6 @@ project_root/
 ## Dependencies Management
 
 ### Requirements Files
-
 - **MAINTAIN** `requirements.txt` for production dependencies
 - **MAINTAIN** `requirements-dev.txt` for development tools
 - **PIN** versions for production: `package==1.2.3`
@@ -152,7 +95,6 @@ project_root/
 - **UPDATE** requirements.txt after installing new packages
 
 ### Dependency Installation
-
 ```bash
 # Install production dependencies
 pip install -r requirements.txt
@@ -166,7 +108,6 @@ pip freeze > requirements.txt  # Update requirements
 ```
 
 ### Dependency Rules
-
 - **AVOID** unnecessary dependencies
 - **PREFER** standard library when possible
 - **EVALUATE** security and maintenance status of packages
@@ -174,7 +115,6 @@ pip freeze > requirements.txt  # Update requirements
 - **USE** `pip-tools` or `poetry` for complex dependency management
 
 ### Version Pinning Strategy
-
 - **PIN** exact versions in production: `requests==2.31.0`
 - **ALLOW** minor updates in development: `requests>=2.31.0,<3.0.0`
 - **REVIEW** and update dependencies regularly for security patches
@@ -184,7 +124,6 @@ pip freeze > requirements.txt  # Update requirements
 ## Type Hints and Annotations
 
 ### Type Hints Requirements
-
 - **USE** type hints for all function parameters and return values
 - **USE** `typing` module for complex types
 - **USE** `Optional[T]` for nullable values
@@ -192,7 +131,6 @@ pip freeze > requirements.txt  # Update requirements
 - **USE** `List[T]`, `Dict[K, V]` for collections (Python < 3.9) or `list[T]`, `dict[K, V]` (Python 3.9+)
 
 ### Type Hint Examples
-
 ```python
 from typing import List, Optional, Dict, Union
 from datetime import datetime
@@ -216,7 +154,6 @@ class UserManager:
 ```
 
 ### When to Use Type Hints
-
 - **ALWAYS** for public APIs
 - **ALWAYS** for function signatures
 - **ALWAYS** for class attributes (use `ClassVar` for class variables)
@@ -228,7 +165,6 @@ class UserManager:
 ## Error Handling
 
 ### Exception Handling Best Practices
-
 - **USE** specific exception types, not bare `except:`
 - **CATCH** exceptions at the appropriate level
 - **LOG** exceptions with context before re-raising
@@ -236,7 +172,6 @@ class UserManager:
 - **USE** custom exceptions for domain-specific errors
 
 ### Exception Handling Pattern
-
 ```python
 import logging
 from typing import Optional
@@ -267,7 +202,6 @@ def get_user(user_id: int) -> Optional[User]:
 ```
 
 ### Error Handling Rules
-
 - **NEVER** use bare `except:` clauses
 - **ALWAYS** log exceptions before handling or re-raising
 - **USE** exception chaining (`raise ... from e`)
@@ -279,14 +213,12 @@ def get_user(user_id: int) -> Optional[User]:
 ## Documentation Standards
 
 ### Docstrings
-
 - **USE** Google-style docstrings (preferred) or NumPy style
 - **DOCUMENT** all public functions, classes, and modules
 - **INCLUDE** parameter descriptions, return values, and exceptions
 - **PROVIDE** usage examples for complex functions
 
 ### Docstring Template
-
 ```python
 def process_data(
     data: List[Dict[str, Any]],
@@ -323,13 +255,11 @@ def process_data(
 ```
 
 ### Module Documentation
-
 - **INCLUDE** module-level docstrings explaining purpose
 - **LIST** main exports in `__init__.py`
 - **DOCUMENT** module-level constants and variables
 
 ### Comments
-
 - **EXPLAIN** "why", not "what" (code should be self-explanatory)
 - **USE** comments for complex algorithms or business logic
 - **AVOID** obvious comments that restate the code
@@ -340,21 +270,18 @@ def process_data(
 ## Testing Guidelines
 
 ### Test Structure
-
 - **ORGANIZE** tests mirroring source code structure
 - **NAME** test files: `test_<module_name>.py`
 - **NAME** test functions: `test_<functionality>_<scenario>`
 - **USE** descriptive test names that explain what is being tested
 
 ### Testing Framework
-
 - **USE** pytest as the primary testing framework
 - **USE** pytest fixtures for test setup and teardown
 - **USE** pytest.mark for test categorization
 - **AIM** for >80% code coverage
 
 ### Test Examples
-
 ```python
 import pytest
 from unittest.mock import Mock, patch
@@ -403,7 +330,6 @@ class TestUserService:
 ```
 
 ### Testing Rules
-
 - **WRITE** tests before or alongside code (TDD when possible)
 - **TEST** edge cases and error conditions
 - **USE** mocking for external dependencies
@@ -412,7 +338,6 @@ class TestUserService:
 - **MAINTAIN** test coverage reports
 
 ### Running Tests
-
 ```bash
 # Run all tests
 pytest
@@ -432,14 +357,12 @@ pytest tests/test_services.py::TestUserService::test_get_user_success
 ## Security Best Practices
 
 ### Input Validation
-
 - **VALIDATE** all user inputs
 - **SANITIZE** data before processing
 - **USE** parameterized queries for database operations
 - **VALIDATE** file paths and prevent directory traversal
 
 ### Secrets Management
-
 - **NEVER** commit secrets, API keys, or credentials
 - **USE** environment variables for sensitive data
 - **USE** `.env` files (excluded from git)
@@ -447,7 +370,6 @@ pytest tests/test_services.py::TestUserService::test_get_user_success
 - **USE** secret management services for production
 
 ### Security Checklist
-
 - [ ] No hardcoded credentials or API keys
 - [ ] Input validation on all user inputs
 - [ ] SQL injection prevention (use parameterized queries)
@@ -458,7 +380,6 @@ pytest tests/test_services.py::TestUserService::test_get_user_success
 - [ ] Regular dependency updates for security patches
 
 ### Example: Secure Configuration
-
 ```python
 import os
 from pathlib import Path
@@ -481,7 +402,6 @@ DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///default.db')
 ## Performance Considerations
 
 ### Code Optimization
-
 - **PROFILE** before optimizing (measure first)
 - **USE** appropriate data structures
 - **AVOID** premature optimization
@@ -489,7 +409,6 @@ DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///default.db')
 - **USE** generators for large datasets
 
 ### Performance Patterns
-
 ```python
 # Use generators for memory efficiency
 def process_large_file(file_path: str):
@@ -508,7 +427,6 @@ if user_id in valid_ids:  # Fast lookup
 ```
 
 ### Async Programming
-
 - **USE** `asyncio` for I/O-bound operations
 - **USE** `async/await` for concurrent operations
 - **CONSIDER** `aiohttp` for async HTTP requests
@@ -519,14 +437,12 @@ if user_id in valid_ids:  # Fast lookup
 ## Configuration Management
 
 ### Configuration Files
-
 - **USE** `pyproject.toml` for project configuration
 - **USE** `.env` files for environment-specific settings
 - **USE** YAML or JSON for complex configurations
 - **VALIDATE** configuration on startup
 
 ### Configuration Pattern
-
 ```python
 from pydantic import BaseSettings, Field
 from typing import Optional
@@ -549,7 +465,6 @@ settings = Settings()
 ```
 
 ### Configuration Rules
-
 - **SEPARATE** development, staging, and production configs
 - **VALIDATE** configuration at startup
 - **USE** type-safe configuration classes (Pydantic)
@@ -560,7 +475,6 @@ settings = Settings()
 ## Git and Version Control
 
 ### Commit Messages
-
 - **USE** clear, descriptive commit messages
 - **FOLLOW** conventional commits format:
   - `feat:` for new features
@@ -571,7 +485,6 @@ settings = Settings()
   - `chore:` for maintenance
 
 ### Commit Message Format
-
 ```
 <type>(<scope>): <subject>
 
@@ -591,7 +504,6 @@ Closes #123
 ```
 
 ### Git Workflow Rules
-
 - **COMMIT** frequently with meaningful messages
 - **BRANCH** for features (`feature/feature-name`)
 - **NEVER** commit sensitive data
@@ -599,7 +511,6 @@ Closes #123
 - **REVIEW** changes before committing
 
 ### Files to Never Commit
-
 - Virtual environments (`venv/`, `env/`)
 - Python cache (`__pycache__/`, `*.pyc`)
 - Environment files (`.env`)
@@ -654,21 +565,18 @@ When generating or modifying code, ensure:
 ## Project-Specific Guidelines
 
 ### Zephyr Integration
-
 - **FOLLOW** Zephyr API best practices
 - **HANDLE** API rate limits appropriately
 - **IMPLEMENT** retry logic with exponential backoff
 - **LOG** all API interactions for debugging
 
 ### QA/Testing Focus
-
 - **MAINTAIN** high test coverage
 - **DOCUMENT** test scenarios and cases
 - **INTEGRATE** with Zephyr test management
 - **TRACK** test execution and results
 
 ### GenAI Considerations
-
 - **VALIDATE** AI-generated content
 - **IMPLEMENT** proper error handling for AI APIs
 - **LOG** AI interactions for audit purposes
@@ -679,7 +587,6 @@ When generating or modifying code, ensure:
 ## Tool Configuration
 
 ### Recommended Tools
-
 - **Formatter:** Black (line length: 88)
 - **Linter:** ruff or flake8
 - **Import Sorter:** isort
@@ -689,7 +596,6 @@ When generating or modifying code, ensure:
 - **Documentation:** Sphinx or MkDocs
 
 ### Example `pyproject.toml`
-
 ```toml
 [tool.black]
 line-length = 88
@@ -719,7 +625,6 @@ addopts = "-v --cov=src --cov-report=html --cov-report=term"
 ## Common Patterns and Anti-Patterns
 
 ### ✅ Good Patterns
-
 ```python
 # Type hints
 def get_user(user_id: int) -> Optional[User]:
@@ -744,7 +649,6 @@ class Status(Enum):
 ```
 
 ### ❌ Anti-Patterns to Avoid
-
 ```python
 # Don't use bare except
 try:
@@ -778,7 +682,6 @@ except Exception:  # BAD - no logging or handling
 ## Quick Reference
 
 ### Before Committing Code
-
 1. ✅ Run formatter: `black .`
 2. ✅ Run linter: `ruff check .` or `flake8 .`
 3. ✅ Run type checker: `mypy .`
@@ -789,7 +692,6 @@ except Exception:  # BAD - no logging or handling
 8. ✅ Write meaningful commit message
 
 ### When Adding New Features
-
 1. ✅ Create feature branch
 2. ✅ Write tests first (TDD)
 3. ✅ Implement feature
@@ -800,7 +702,6 @@ except Exception:  # BAD - no logging or handling
 8. ✅ Create pull request
 
 ### When Fixing Bugs
-
 1. ✅ Write failing test
 2. ✅ Fix the bug
 3. ✅ Verify test passes
@@ -821,11 +722,4 @@ except Exception:  # BAD - no logging or handling
 
 ---
 
-## Version History
-
-- **1.0** (2026-01-XX): Initial version
-
----
-
 **Note:** This document should be updated as the project evolves and new patterns emerge. All AI agents working on this project should follow these guidelines consistently.
-
