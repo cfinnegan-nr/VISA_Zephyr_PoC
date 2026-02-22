@@ -55,6 +55,17 @@ coverage.xml
 .env
 .env.local
 
+# Credential files (do not commit)
+.openai
+
+# Input files with project-specific data (do not commit)
+AtlassianInput.txt
+
+# Temporary test files
+Testing_the_GtiHub_Commits.txt
+*_test.txt
+*_temp.txt
+
 # OS
 .DS_Store
 Thumbs.db
